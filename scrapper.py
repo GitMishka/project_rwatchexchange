@@ -14,12 +14,12 @@ def run_scrapper():
         password=reddit_password,
     )
 
-    subreddit = reddit.subreddit("watchexchange")  # Changed to watchexchange subreddit
+    subreddit = reddit.subreddit("watchexchange") 
 
     posts_data = []
     start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
-    for submission in subreddit.new(limit=None):  # Adjust limit as necessary
+    for submission in subreddit.new(limit=1000):  # Adjust limit as necessary
         submission_time = datetime.fromtimestamp(submission.created_utc, tz=timezone.utc)
         if submission_time >= start_of_day:
             post_details = {
@@ -55,7 +55,6 @@ def run_scrapper():
     posts_df.to_csv('posts.csv')
     return posts_df
 
-# Example usage
 if __name__ == "__main__":
     result_df = run_scrapper()
     print(result_df)
