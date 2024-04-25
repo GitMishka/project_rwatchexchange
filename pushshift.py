@@ -4,10 +4,19 @@ import pandas as pd
 from datetime import datetime
 from config import reddit_client_id, reddit_client_secret, reddit_user_agent
 
+
 def get_posts_from_pushshift(subreddit, start_time, end_time):
     url = f"https://api.pushshift.io/reddit/search/submission/?subreddit={subreddit}&after={start_time}&before={end_time}&size=500"
-    posts = requests.get(url).json()
+    response = requests.get(url)
+    posts = response.json()
+
+    # Check if 'data' key exists in the response
+    if 'data' not in posts:
+        print("No data found in the API response:", posts)
+        return []  # Return an empty list if no data is found
+
     return [post['id'] for post in posts['data']]
+
 
 def fetch_data_with_praw(post_ids):
     reddit = praw.Reddit(
@@ -29,6 +38,6 @@ def fetch_data_with_praw(post_ids):
     return pd.DataFrame(posts_data)
 
 # Provide the subreddit name, start time, and end time in epoch format.
-post_ids = get_posts_from_pushshift('watchexchange', '2021-04-25', '2024-04-25')
+post_ids = get_posts_from_pushshift('watchexchange', '2022-04-25', '2024-04-25')
 data_frame = fetch_data_with_praw(post_ids)
 print(data_frame)
