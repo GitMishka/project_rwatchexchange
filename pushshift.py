@@ -1,43 +1,34 @@
 import praw
-import requests
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from config import reddit_client_id, reddit_client_secret, reddit_user_agent
 
-
-def get_posts_from_pushshift(subreddit, start_time, end_time):
-    url = f"https://api.pushshift.io/reddit/search/submission/?subreddit={subreddit}&after={start_time}&before={end_time}&size=500"
-    response = requests.get(url)
-    posts = response.json()
-
-    # Check if 'data' key exists in the response
-    if 'data' not in posts:
-        print("No data found in the API response:", posts)
-        return []  # Return an empty list if no data is found
-
-    return [post['id'] for post in posts['data']]
-
-
-def fetch_data_with_praw(post_ids):
+def fetch_recent_posts(subreddit_name, days_ago):
+    """Fetch recent posts from a subreddit up to 'days_ago'."""
     reddit = praw.Reddit(
         client_id=reddit_client_id,
         client_secret=reddit_client_secret,
         user_agent=reddit_user_agent
     )
 
+    subreddit = reddit.subreddit(subreddit_name)
+    limit_time = datetime.utcnow() - timedelta(days=days_ago)
+    
     posts_data = []
-    for post_id in post_ids:
-        submission = reddit.submission(id=post_id)
-        post_details = {
+    for submission in subreddit.new(limit=None):
+        submission_time = datetime.utcfromtimestamp(submission.created_utc)
+        if submission_time < limit_time:
+            break
+        posts_data.append({
+            'id': submission.id,
             'title': submission.title,
-            'created_utc': datetime.fromtimestamp(submission.created_utc),
+            'created_utc': submission_time,
             'num_comments': submission.num_comments,
-            'upvotes': submission.score,
-        }
-        posts_data.append(post_details)
+            'upvotes': submission.score
+        })
+    posts_data.to_csv('posts.csv')
     return pd.DataFrame(posts_data)
 
-# Provide the subreddit name, start time, and end time in epoch format.
-post_ids = get_posts_from_pushshift('watchexchange', '2022-04-25', '2024-04-25')
-data_frame = fetch_data_with_praw(post_ids)
+# Example usage
+data_frame = fetch_recent_posts('watchexchange', 30)  # Fetch posts from the last 30 days
 print(data_frame)
