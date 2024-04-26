@@ -47,10 +47,16 @@ def find_brand_and_price(title):
         if brand_name.lower() in title.lower():
             brand = brand_name
             break
-    price_pattern = r'\$\d+|USD\s\d+'
+    # Regex to find price patterns like $1000 or USD 1500
+    price_pattern = r'\$(\d+)|USD\s(\d+)'
     price_matches = re.findall(price_pattern, title)
-    price = price_matches[0] if price_matches else None
+    if price_matches:
+        # Flatten the list of tuples and filter out None values, then convert to int
+        price = [int(num) for tup in price_matches for num in tup if num][0]
+    else:
+        price = None
     return brand, price
+
 
 def insert_posts(df):
     conn = psycopg2.connect(
