@@ -22,7 +22,7 @@ def run_scrapper():
     posts_data = []
     start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
-    for submission in subreddit.new(limit=1000):
+    for submission in subreddit.new(limit=None):
         submission_time = datetime.fromtimestamp(submission.created_utc, tz=timezone.utc)
         if submission_time >= start_of_day:
             post_details = {
