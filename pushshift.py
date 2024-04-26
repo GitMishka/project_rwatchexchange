@@ -29,6 +29,6 @@ def fetch_recent_posts(subreddit_name, days_ago):
     return pd.DataFrame(posts_data)
 
 # Example usage
-data_frame = fetch_recent_posts('watchexchange', 360)  # Fetch posts from the last 30 days
+data_frame = fetch_recent_posts('watchexchange', 100)  # Fetch posts from the last 30 days
 print(data_frame)
 data_frame.to_csv('posts.csv')
