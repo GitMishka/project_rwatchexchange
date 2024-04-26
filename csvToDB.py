@@ -23,7 +23,8 @@ def find_brand_and_price(title):
 
 # Load CSV data
 df = pd.read_csv('posts.csv')
-
+if 'username' not in df.columns:
+    df['username'] = "N/A"
 # Apply function to find brand and price
 df[['brand', 'price']] = df['title'].apply(lambda title: pd.Series(find_brand_and_price(title)))
 
@@ -37,7 +38,7 @@ def insert_posts(df):
     cur = conn.cursor()
     for _, row in df.iterrows():
         cur.execute("""
-            INSERT INTO subreddit_posts (id, created_utc, username, num_comments, upvotes, title, brand, price)
+            INSERT INTO watchexchange_posts (id, created_utc, username, num_comments, upvotes, title, brand, price)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (id) DO NOTHING;
         """, (row['id'], row['created_utc'], row['username'], row['num_comments'], row['upvotes'], row['title'], row['brand'], row['price']))
